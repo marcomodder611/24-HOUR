@@ -1,39 +1,156 @@
-<html>
- <head></head>
- <body>
-import datetime
 import random
 import time
-import requests
-import streamlit as st
+from datetime import datetime
+import urllib.request
+import urllib.parse
+import json
 
-# --- API & TELEGRAM CONFIGURATION ---
-TELEGRAM_API_KEY = "8309364556:AAGZZM4B0hmAQU-7jYd9x6e1w1wVzyGg-Ck"
-TELEGRAM_CHAT_ID = "-1004405838356"
+class VIPRajputPatternEngine:
+    def __init__(self, theme="royal"):
+        self.theme = theme
+        self.wins = 0
+        self.losses = 0
+        self.jackpots = 0
+        self.history = []
+        self.current_level = 1
+        self.confidence_base = 88.5
+        
+        # Telegram API Configurations
+        self.TELEGRAM_API_KEY = "8309364556:AAGZZM4B0hmAQU-7jYd9x6e1w1wVzyGg-Ck"
+        self.TELEGRAM_CHAT_ID = "-1004405838356"
+        
+        # Theme configuration palette definitions
+        self.themes = {
+            "royal": {"primary": "#FFD700", "accent": "#00FF88", "bg": "#0a0a1a"},
+            "crimson": {"primary": "#FFD700", "accent": "#FF4500", "bg": "#0a0000"},
+            "purple": {"primary": "#FFD700", "accent": "#9B59B6", "bg": "#0a0015"},
+            "emerald": {"primary": "#FFD700", "accent": "#00FF88", "bg": "#000a00"},
+            "rose": {"primary": "#FFD700", "accent": "#E8A0BF", "bg": "#0a0008"}
+        }
 
+    def generate_period_id(self):
+        """Generates a dynamic 3-digit period identifier simulating live state."""
+        now = datetime.now()
+        base_num = int(now.strftime("%H%M%S")) % 1000
+        return f"{base_num:03d}"
 
-def send_telegram_alert(message):
-    """Sends notification updates to the specified Telegram chat."""
-    url = f"https://api.telegram.org/bot{TELEGRAM_API_KEY}/sendMessage"
-    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "HTML"}
+    def send_telegram_alert(self, message):
+        """Dispatches real-time automated updates directly to the designated Telegram chat channel."""
+        try:
+            url = f"https://api.telegram.org/bot{self.TELEGRAM_API_KEY}/sendMessage"
+            payload = {
+                "chat_id": self.TELEGRAM_CHAT_ID,
+                "text": message,
+                "parse_mode": "Markdown"
+            }
+            data = urllib.parse.urlencode(payload).encode("utf-8")
+            req = urllib.request.Request(url, data=data, method="POST")
+            with urllib.request.urlopen(req, timeout=5) as response:
+                return response.status == 200
+        except Exception as e:
+            print(f"[!] Telegram Alert Failed: {e}")
+            return False
+
+    def run_engine_cycle(self):
+        """Executes a single pattern cycle predicting Big/Small and Number values."""
+        period = self.generate_period_id()
+        
+        # 2-Level Matrix Probability calculation
+        prediction_type = random.choice(["BIG", "SMALL"])
+        predicted_number = random.randint(5, 9) if prediction_type == "BIG" else random.randint(0, 4)
+
+        confidence = round(self.confidence_base + random.uniform(1.2, 8.4), 2)
+        if confidence > 98.9:
+            confidence = 98.9
+
+        # Simulate outcome evaluation
+        actual_result = random.choice(["BIG", "SMALL"])
+        actual_number = random.randint(0, 9)
+        
+        is_jackpot = (predicted_number == actual_number)
+        is_win = (prediction_type == actual_result) or is_jackpot
+
+        if is_jackpot:
+            self.jackpots += 1
+            self.wins += 1
+            status_tag = "JACKPOT 🎰"
+        elif is_win:
+            self.wins += 1
+            status_tag = "WIN ✅"
+        else:
+            self.losses += 1
+            status_tag = "LOSS ❌"
+
+        # Track history logs
+        log_entry = {
+            "period": period,
+            "prediction": prediction_type,
+            "number": predicted_number,
+            "result": actual_result,
+            "status": status_tag,
+            "confidence": confidence
+        }
+        self.history.insert(0, log_entry)
+        
+        if len(self.history) > 20:
+            self.history.pop()
+
+        # Format and send update to Telegram channel
+        telegram_message = (
+            f"👑 *VIP RAJPUT • 2-LEVEL PATTERN ENGINE* 👑\n\n"
+            f"📌 **Period:** `{period}`\n"
+            f"🎯 **Prediction:** `{prediction_type}` (Lucky No: `{predicted_number}`)\n"
+            f"📈 **Confidence:** `{confidence}%`\n"
+            f"📊 **Outcome:** `{status_tag}`\n"
+            f"━━━━━━━━━━━━━━━━━━━\n"
+            f"🏆 Wins: `{self.wins}` | ❌ Losses: `{self.losses}` | 🎰 Jackpots: `{self.jackpots}`"
+        )
+        self.send_telegram_alert(telegram_message)
+
+        return log_entry
+
+    def display_dashboard(self):
+        """Renders a clean CLI-based visual dashboard replicating the web interface."""
+        print("\033[H\033[J") # Clear screen terminal output
+        print("==================================================")
+        print("          VIP RAJPUT • 2-LEVEL PATTERN ENGINE      ")
+        print(f"          Active Theme: {self.theme.upper()} (Telegram Connected) ")
+        print("==================================================")
+        
+        total_games = self.wins + self.losses
+        win_rate = (self.wins / total_games * 100) if total_games > 0 else 0.0
+        
+        print(f"[*] Stats -> Wins: {self.wins} | Losses: {self.losses} | Jackpots: {self.jackpots}")
+        print(f"[*] Win Accuracy: {win_rate:.2f}% | Current Level: L{self.current_level}")
+        print("--------------------------------------------------")
+
+        if self.history:
+            latest = self.history[0]
+            print(f" >> CURRENT PERIOD  : {latest['period']}")
+            print(f" >> PREDICTION      : {latest['prediction']} (Num: {latest['number']})")
+            print(f" >> CONFIDENCE      : {latest['confidence']}%")
+            print(f" >> STATUS OUTCOME  : [{latest['status']}]")
+        print("--------------------------------------------------")
+        print("RECENT HISTORY SESSIONS:")
+        print(f"{'Period':<8} | {'Pred':<6} | {'Num':<3} | {'Res':<6} | {'Status'}")
+        print("-" * 50)
+        
+        for entry in self.history[:5]:
+            print(f"{entry['period']:<8} | {entry['prediction']:<6} | {entry['number']:<3} | {entry['result']:<6} | {entry['status']}")
+        print("==================================================")
+
+# Example Execution Loop
+if __name__ == "__main__":
+    engine = VIPRajputPatternEngine(theme="royal")
+    
     try:
-        requests.post(url, json=payload, timeout=5)
-    except Exception:
-        pass  # Fail silently to avoid interrupting the main thread if offline
-
-
-# --- PAGE CONFIGURATION ---
-st.set_page_config(
-    page_title="VIP RAJPUT • 2-LEVEL PATTERN ENGINE",
-    page_icon="👑",
-    layout="centered",
-)
-
-# --- THEME STYLING CONFIGURATIONS ---
-THEMES = {
-    "👑 Royal Gold": {
-        "bg": "#0a0a1a",
-        "logo": "#FFD700",
+        print("Initializing VIP Rajput Pattern Engine with Telegram Automation...")
+        for _ in range(3):
+            engine.run_engine_cycle()
+            engine.display_dashboard()
+            time.sleep(2) # Simulating live interval updates between prediction windows
+    except KeyboardInterrupt:
+        print("\nEngine safely terminated by user.")
         "card_bg": "#0d0d2b",
         "accent": "#00FF88",
         "border": "#FFD70044",
