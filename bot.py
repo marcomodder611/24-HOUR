@@ -255,17 +255,7 @@ else:
 # --- AUTO-REFRESH TRIGGER ---
 time.sleep(1)
 st.rerun()
-   <div style="font-size: 10px; background: rgba(0,0,0,0.4); padding: 4px 12px; border-radius: 20px; display: inline-block; color: {theme['logo']}; border: 1px solid {theme['logo']};">{st.session_state.level}</div>
-   <div style="font-size: 75px; font-weight: 900; margin: 10px 0; color: {theme['logo']}; text-shadow: 0 0 20px {theme['logo']};">{st.session_state.current_pred}</div>
-   <div style="font-size: 35px; font-weight: 900; background: radial-gradient(circle, {theme['card_bg']}, {theme['bg']}); width: 70px; height: 70px; line-height: 70px; border-radius: 50%; margin: 0 auto; border: 4px solid {theme['logo']}; color: {theme['logo']};">{st.session_state.current_num}</div>
-   <div style="margin-top: 15px; font-size: 12px; color: #aaa;">
-    Confidence Accuracy: <strong style="color: {theme['accent']};">{st.session_state.confidence}%</strong>
-   </div>
-  </div>
-  """, unsafe_allow_html=True, ) st.markdown("
-  <br>
-  ", unsafe_allow_html=True) # --- STATS BAR --- total_games = st.session_state.wins + st.session_state.losses win_rate = ( (st.session_state.wins / total_games * 100) if total_games &gt; 0 else 100.0 ) col_s1, col_s2, col_s3, col_s4 = st.columns(4) col_s1.metric("Wins", st.session_state.wins) col_s2.metric("Losses", st.session_state.losses) col_s3.metric("Jackpots", st.session_state.jackpots) col_s4.metric("Win Rate", f"{win_rate:.1f}%") st.markdown("---") # --- SESSION HISTORY TABLE --- st.markdown("### 📊 Live Session Logs") if st.session_state.history: for h in st.session_state.history[:10]: color = ( "#00FF88" if h["status"] == "WIN" else ("#FFD700" if h["status"] == "JACKPOT" else "#FF4500") ) st.markdown( f"🔹 Period: **{h['period']}** | Prediction: **{h['pred']}** | Result:" f" <span style="color: {color}; font-weight:&quot;
-        f&quot; 900;">{h['status']}</span>", unsafe_allow_html=True, ) else: st.info("Waiting for the first period cycle to log history results...") # --- AUTO-REFRESH TRIGGER --- time.sleep(1) st.rerun() _s4.metric("Win Rate", f"{win_rate:.1f}%") st.markdown("---") # --- SESSION HISTORY TABLE --- st.markdown("### 📊 Live Session Logs") if st.session_state.history: for h in st.session_state.history[:10]: color = ( "#00FF88" if h["status"] == "WIN" else ("#FFD700" if h["status"] == "JACKPOT" else "#FF4500") ) st.markdown( f"🔹 Period: **{h['period']}** | Prediction: **{h['pred']}** | Result:" f" <span style="color: {color}; font-weight:&quot;
+ts...") # --- AUTO-REFRESH TRIGGER --- time.sleep(1) st.rerun() _s4.metric("Win Rate", f"{win_rate:.1f}%") st.markdown("---") # --- SESSION HISTORY TABLE --- st.markdown("### 📊 Live Session Logs") if st.session_state.history: for h in st.session_state.history[:10]: color = ( "#00FF88" if h["status"] == "WIN" else ("#FFD700" if h["status"] == "JACKPOT" else "#FF4500") ) st.markdown( f"🔹 Period: **{h['period']}** | Prediction: **{h['pred']}** | Result:" f" <span style="color: {color}; font-weight:&quot;
         f&quot; 900;">{h['status']}</span>", unsafe_allow_html=True, ) else: st.info("Waiting for the first period cycle to log history results...") # --- AUTO-REFRESH TRIGGER --- time.sleep(1) st.rerun()
  </body>
 </html>    },
